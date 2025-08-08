@@ -1,0 +1,123 @@
+
+<view class="container">
+
+<!-- 顶部自定义导航栏 -->
+<view
+  class="top-bar"
+  style="padding-top:{{statusBarHeight}}px; height:{{statusBarHeight + 44}}px;"
+>
+  <!-- 菜单 -->
+  <view class="icon-btn" bindtap="onMenuTap">
+    <icon type="menu" size="24" color="#444" />
+  </view>
+
+  <!-- 选项卡 -->
+  <view class="top-tabs">
+    <block wx:for="{{topTabs}}" wx:key="key" wx:for-item="tab">
+      <view
+        class="tab-touch"
+        bindtap="onTopTabTap"
+        data-key="{{tab}}"
+      >
+        <text
+          class="tab-text {{activeTopTab === tab ? 'tab-active' : ''}}"
+        >{{tab}}</text>
+      </view>
+    </block>
+  </view>
+
+  <!-- 搜索 -->
+  <view class="icon-btn" bindtap="onSearchTap">
+    <icon type="search" size="24" color="#444" />
+  </view>
+</view>
+
+<!-- 主内容区：下拉刷新 + 上拉加载 -->
+<scroll-view
+  class="content"
+  scroll-y="true"
+  refresher-enabled="true"
+  refresher-triggered="{{refreshing}}"
+  bindrefresherrefresh="onPullDownRefresh"
+  bindscrolltolower="onReachBottom"
+  lower-threshold="100"
+  style="padding-bottom:{{fabBottom + fabSize + 10}}px;"
+>
+
+  <!-- Banner 轮播 -->
+  <swiper
+    class="banner"
+    indicator-dots="true"
+    indicator-color="#ccc"
+    indicator-active-color="#d81e06"
+    autoplay="true"
+    interval="3000"
+    duration="500"
+  >
+    <block wx:for="{{bannerList}}" wx:key="index" wx:for-item="item">
+      <swiper-item>
+        <image src="{{item.src}}" class="banner-image" mode="aspectFill" />
+      </swiper-item>
+    </block>
+  </swiper>
+
+  <!-- 帖子两列瀑布流 -->
+  <view class="list-content">
+    <block wx:for="{{posts}}" wx:key="uuid" wx:for-index="idx" wx:for-item="item">
+      <view class="card {{(idx + 1) % 2 === 0 ? 'card-even' : ''}}">
+        <image src="{{item.imageUrl}}" class="card-image" mode="aspectFill" />
+        <text class="card-title">{{item.title}}</text>
+        <view class="card-footer">
+          <view class="author-container">
+            <image src="{{item.authorAvatar}}" class="author-avatar" />
+            <text class="author">{{item.authorName}}</text>
+          </view>
+          <view class="likes-row">
+            <icon type="like" size="16" color="#666" />
+            <text class="likes-text">{{item.likes}}</text>
+          </view>
+        </view>
+      </view>
+    </block>
+  </view>
+</scroll-view>
+
+<!-- 底部导航栏 -->
+<view class="bottom-bar">
+  <block wx:for="{{bottomTabs}}" wx:key="key" wx:for-item="tab">
+    <view
+      class="bottom-item {{activeBottom === tab.key ? 'bottom-item-active' : ''}}"
+      bindtap="onBottomTabTap"
+      data-key="{{tab.key}}"
+    >
+      <icon
+        type="{{tab.icon}}"
+        size="24"
+        color="{{activeBottom === tab.key ? '#d81e06' : '#888'}}"
+      />
+      <text
+        class="bottom-label {{activeBottom === tab.key ? 'bottom-label-active' : ''}}"
+      >{{tab.label}}</text>
+    </view>
+  </block>
+</view>
+
+<!-- 中央 FAB 按钮 -->
+<view
+  class="fab"
+  style="bottom:{{fabBottom}}px; width:{{fabSize}}px; height:{{fabSize}}px;"
+  bindtap="onFabTap"
+>
+  <text class="plus">+</text>
+</view>
+
+<!-- 发帖弹层：这里假设你已经封装了 custom-action-sheet 组件 -->
+<custom-action-sheet
+  visible="{{sheetVisible}}"
+  bind:close="onActionSheetClose"
+  bind:selectGallery="onSelectGallery"
+  bind:takePhoto="onTakePhoto"
+  bind:textPost="onTextPost"
+  bind:templatePost="onTemplatePost"
+/>
+</view>
