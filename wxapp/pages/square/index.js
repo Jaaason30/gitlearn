@@ -9,10 +9,10 @@ Page({
       activeTopTab: '推荐',
   
       bottomTabs: [
-        { key: 'heart',   icon: 'like',    label: '心动' },
-        { key: 'chat',    icon: 'comment', label: '聊天' },
-        { key: 'square',  icon: 'grid',    label: '广场' },
-        { key: 'me',      icon: 'user',    label: '我的' },
+        { key: 'heart',  icon: '❤️', label: '心动' },
+        { key: 'chat',   icon: '💬', label: '聊天' },
+        { key: 'square', icon: '🔲', label: '广场' },
+        { key: 'me',     icon: '👤', label: '我的' },
       ],
       activeBottom: 'square',
   
