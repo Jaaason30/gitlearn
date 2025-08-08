@@ -7,24 +7,31 @@
   }
   
   /** 顶栏 **/
-  .top-bar {
+.top-bar {
     position: relative;
+    display: flex;
     flex-direction: row;
     align-items: center;
     padding: 0 24rpx;
     border-bottom: 1rpx solid #eee;
     z-index: 3;
   }
-  .icon-btn {
+.icon-btn {
     margin-left: 16rpx;
+  }
+
+  .icon-emoji {
+    font-size: 48rpx;
+    color: #444;
   }
   
   /** 顶部选项卡 **/
-  .top-tabs {
+.top-tabs {
     position: absolute;
     left: 60rpx;
     right: 0;
     top: 44rpx;
+    display: flex;
     flex-direction: row;
     justify-content: center;
   }
@@ -52,8 +59,9 @@
   }
   
   /** 列表内容 **/
-  .list-content {
+.list-content {
     padding: 0 16rpx;
+    display: flex;
     flex-direction: row;
     flex-wrap: wrap;
   }
@@ -71,11 +79,9 @@
   .card-even {
     margin-right: 0;
   }
-  .card-image {
+.card-image {
     width: 100%;
-    /* 高度按 1.3 比例计算 */
-    height: 0;
-    padding-top: 124%;
+    height: 390rpx;
   }
   .card-title {
     padding: 12rpx;
@@ -83,13 +89,15 @@
     line-height: 36rpx;
     color: #222;
   }
-  .card-footer {
+.card-footer {
+    display: flex;
     flex-direction: row;
     justify-content: space-between;
     align-items: center;
     padding: 0 12rpx 16rpx;
   }
-  .author-container {
+.author-container {
+    display: flex;
     flex-direction: row;
     align-items: center;
   }
@@ -103,9 +111,14 @@
     font-size: 24rpx;
     color: #666;
   }
-  .likes-row {
+.likes-row {
+    display: flex;
     flex-direction: row;
     align-items: center;
+  }
+  .like-icon {
+    font-size: 28rpx;
+    color: #666;
   }
   .likes-text {
     font-size: 24rpx;
@@ -114,20 +127,26 @@
   }
   
   /** 底部导航 **/
-  .bottom-bar {
+.bottom-bar {
     position: absolute;
     bottom: 0;
     left: 0;
     width: 100%;
     height: 112rpx; /* FAB_BOTTOM * 2 */
+    display: flex;
     flex-direction: row;
     background-color: #fff;
     border-top: 1rpx solid #eee;
   }
-  .bottom-item {
+.bottom-item {
     flex: 1;
+    display: flex;
+    flex-direction: column;
     justify-content: center;
     align-items: center;
+  }
+  .bottom-icon {
+    font-size: 48rpx;
   }
   .bottom-label {
     font-size: 24rpx;
