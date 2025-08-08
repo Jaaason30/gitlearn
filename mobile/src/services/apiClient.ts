@@ -16,6 +16,7 @@ const decodeJWT = (token: string): any => {
     return JSON.parse(atob(parts[1]));
   } catch (error) {
     return null;
+
   }
 };
 
