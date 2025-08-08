@@ -8,7 +8,7 @@
 >
   <!-- 菜单 -->
   <view class="icon-btn" bindtap="onMenuTap">
-    <icon type="menu" size="24" color="#444" />
+    <text class="icon-emoji">☰</text>
   </view>
 
   <!-- 选项卡 -->
@@ -28,7 +28,7 @@
 
   <!-- 搜索 -->
   <view class="icon-btn" bindtap="onSearchTap">
-    <icon type="search" size="24" color="#444" />
+    <text class="icon-emoji">🔍</text>
   </view>
 </view>
 
@@ -73,7 +73,7 @@
             <text class="author">{{item.authorName}}</text>
           </view>
           <view class="likes-row">
-            <icon type="like" size="16" color="#666" />
+            <text class="like-icon">👍</text>
             <text class="likes-text">{{item.likes}}</text>
           </view>
         </view>
@@ -90,14 +90,8 @@
       bindtap="onBottomTabTap"
       data-key="{{tab.key}}"
     >
-      <icon
-        type="{{tab.icon}}"
-        size="24"
-        color="{{activeBottom === tab.key ? '#d81e06' : '#888'}}"
-      />
-      <text
-        class="bottom-label {{activeBottom === tab.key ? 'bottom-label-active' : ''}}"
-      >{{tab.label}}</text>
+      <text class="bottom-icon" style="color:{{activeBottom === tab.key ? '#d81e06' : '#888'}}">{{tab.icon}}</text>
+      <text class="bottom-label {{activeBottom === tab.key ? 'bottom-label-active' : ''}}">{{tab.label}}</text>
     </view>
   </block>
 </view>
