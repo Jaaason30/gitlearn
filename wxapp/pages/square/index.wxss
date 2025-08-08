@@ -128,7 +128,9 @@
   
   /** 底部导航 **/
 .bottom-bar {
-    position: absolute;
+
+    position: fixed;
+
     bottom: 0;
     left: 0;
     width: 100%;
@@ -137,6 +139,7 @@
     flex-direction: row;
     background-color: #fff;
     border-top: 1rpx solid #eee;
+    z-index: 2;
   }
 .bottom-item {
     flex: 1;
@@ -160,7 +163,7 @@
   
   /** 中央发帖按钮（FAB） **/
   .fab {
-    position: absolute;
+    position: fixed;
     align-self: center;
     border-radius: 56rpx; /* FAB_SIZE/2 */
     background-color: #d81e06;
@@ -168,6 +171,7 @@
     justify-content: center;
     /* 阴影 */
     box-shadow: 0 4rpx 8rpx rgba(0,0,0,0.3);
+    z-index: 3;
   }
   .plus {
     font-size: 72rpx;
