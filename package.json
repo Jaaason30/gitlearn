@@ -1,0 +1,23 @@
+{
+  "dependencies": {
+    "@babel/runtime": "^7.28.2"
+  },
+  "name": "wechatprojects",
+  "version": "1.0.0",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Jaaason30/gitlearn.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/Jaaason30/gitlearn/issues"
+  },
+  "homepage": "https://github.com/Jaaason30/gitlearn#readme",
+  "description": ""
+}

@@ -28,7 +28,7 @@
   bindrefresherrefresh="onPullDownRefresh"
   bindscrolltolower="onReachBottom"
   lower-threshold="100"
-  style="padding-bottom:112rpx;"
+  style="padding-bottom: calc(112rpx + env(safe-area-inset-bottom));"
 >
   <!-- Banner 轮播 -->
   <swiper
@@ -86,14 +86,18 @@
   </view>
 </scroll-view>
 
-<!-- 底部导航（四个按钮 + 顶部小圆点高亮） -->
+<!-- 底部导航（4个按钮 + 顶部小圆点高亮） -->
 <view class="bottom-bar">
   <block wx:for="{{bottomTabs}}" wx:key="key">
     <view class="bottom-item-container" bindtap="onBottomTabTap" data-key="{{item.key}}">
       <view wx:if="{{activeBottom === item.key}}" class="bottom-dot"></view>
       <view class="bottom-item {{activeBottom === item.key ? 'bottom-item-active' : ''}}">
-        <text class="bottom-icon" style="color:{{activeBottom === item.key ? '#d81e06' : '#888'}}">{{item.icon}}</text>
-        <text class="bottom-label {{activeBottom === item.key ? 'bottom-label-active' : ''}}">{{item.label}}</text>
+        <image class="bottom-icon-img"
+               src="{{item.icon}}"
+               mode="widthFix" />
+        <text class="bottom-label {{activeBottom === item.key ? 'bottom-label-active' : ''}}">
+          {{item.label}}
+        </text>
       </view>
     </view>
   </block>

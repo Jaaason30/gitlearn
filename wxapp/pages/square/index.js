@@ -1,16 +1,15 @@
-// 纯小程序原生写法；无 import/require，无 Babel helper
 Page({
     data: {
       statusBarHeight: 0,
-  
       topTabs: ['关注', '推荐'],
       activeTopTab: '推荐',
   
+      // 图标改成本地 PNG，避免 emoji 首帧丢失
       bottomTabs: [
-        { key: 'heart',  icon: '❤️', label: '心动' },
-        { key: 'chat',   icon: '💬', label: '聊天' },
-        { key: 'square', icon: '🔲', label: '广场' },
-        { key: 'me',     icon: '👤', label: '我的' }
+        { key: 'heart',  icon: '/assets/icons/heart.png',  label: '心动' },
+        { key: 'chat',   icon: '/assets/icons/chat.png',   label: '聊天' },
+        { key: 'square', icon: '/assets/icons/square.png', label: '广场' },
+        { key: 'me',     icon: '/assets/icons/me.png',     label: '我的' }
       ],
       activeBottom: 'square',
   
@@ -20,16 +19,39 @@ Page({
       pageSize: 10,
       refreshing: false,
   
-      // 本地兜底图（请在项目放一张 /assets/placeholder.png）
-      fallbackImg: '/assets/placeholder.png'
-      
+      fallbackImg: '/assets/placeholder.png',
+  
+      // 本地文件循环（你前面那套）
+      bannerFiles: [
+        '/assets/banner/banner_a.png',
+        '/assets/banner/banner_b.png',
+        '/assets/banner/banner_c.png'
+      ],
+      postFiles: [
+        '/assets/post/post_a.png',
+        '/assets/post/post_b.png',
+        '/assets/post/post_c.png'
+      ],
+      avatarFiles: [
+        '/assets/avatar/avatar1.png',
+        '/assets/avatar/avatar2.png',
+        '/assets/avatar/avatar3.png'
+      ]
     },
   
     onLoad: function () {
-      var sys = wx.getSystemInfoSync();
-      // 触发一次 setData，避免首屏 emoji 渲染延迟
+      let statusBarHeight = 0;
+      try {
+        if (typeof wx.getWindowInfo === 'function') {
+          statusBarHeight = wx.getWindowInfo().statusBarHeight || 0;
+        } else {
+          statusBarHeight = wx.getSystemInfoSync().statusBarHeight || 0;
+        }
+      } catch (e) {}
+  
+      // 触发一次渲染，确保底栏首帧显示
       this.setData({
-        statusBarHeight: sys.statusBarHeight,
+        statusBarHeight,
         bottomTabs: this.data.bottomTabs
       });
   
@@ -37,14 +59,29 @@ Page({
       this.loadInitial();
     },
   
-    // 使用 via.placeholder.com（稳定）做占位图
+    onShow: function () {
+      // 某些版本偶发丢失，补一次
+      this.setData({ activeBottom: this.data.activeBottom });
+    },
+  
+    // 循环取本地图片
+    makeBannerUrl(i) {
+      const files = this.data.bannerFiles;
+      return files[i % files.length];
+    },
+    makePostUrl(id) {
+      const files = this.data.postFiles;
+      return files[(id - 1) % files.length];
+    },
+    makeAvatarUrl(id) {
+      const files = this.data.avatarFiles;
+      return files[(id - 1) % files.length];
+    },
+  
     initBanner: function () {
-      var now = Date.now();
-      var arr = [];
-      for (var i = 0; i < 3; i++) {
-        arr.push({
-          src: 'https://via.placeholder.com/750x280.png?text=Banner+' + (i + 1) + '&t=' + (now + i)
-        });
+      const arr = [];
+      for (let i = 0; i < 3; i++) {
+        arr.push({ src: this.makeBannerUrl(i) });
       }
       this.setData({ bannerList: arr });
     },
@@ -55,60 +92,56 @@ Page({
     },
   
     fetchPosts: function (isRefresh) {
-      var page = this.data.page;
-      var pageSize = this.data.pageSize;
-      var start = (page - 1) * pageSize;
-      var list = [];
-      for (var i = 0; i < pageSize; i++) {
-        var id = start + i + 1;
-        var avatarIdx = ((id - 1) % 70) + 1; // 1..70
+      const { page, pageSize } = this.data;
+      const start = (page - 1) * pageSize;
+      const list = [];
+  
+      for (let i = 0; i < pageSize; i++) {
+        const id = start + i + 1;
         list.push({
-          uuid: 'post-' + id,
-          title: '帖子标题 ' + id,
-          authorName: '用户' + id,
-          authorAvatar: 'https://i.pravatar.cc/40?img=' + avatarIdx,
+          uuid: `post-${id}`,
+          title: `帖子标题 ${id}`,
+          authorName: `用户${id}`,
+          authorAvatar: this.makeAvatarUrl(id),
           likes: Math.floor(Math.random() * 100),
-          imageUrl: 'https://via.placeholder.com/300x390.png?text=Post+' + id
+          imageUrl: this.makePostUrl(id)
         });
       }
   
-      var that = this;
-      setTimeout(function () {
+      setTimeout(() => {
         if (isRefresh) {
-          that.setData({ posts: list, refreshing: false });
+          this.setData({ posts: list, refreshing: false });
           wx.stopPullDownRefresh();
         } else {
-          that.setData({ posts: that.data.posts.concat(list), refreshing: false });
+          this.setData({ posts: this.data.posts.concat(list), refreshing: false });
         }
       }, 200);
     },
   
-    // 下拉刷新
+    // 下拉刷新 / 上拉加载
     onPullDownRefresh: function () {
       if (this.data.refreshing) return;
       this.setData({ refreshing: true });
       this.initBanner();
       this.loadInitial();
     },
-  
-    // 上拉加载
     onReachBottom: function () {
       if (this.data.refreshing) return;
       this.setData({ page: this.data.page + 1 });
       this.fetchPosts(false);
     },
   
-    // 顶部 Tab 切换
+    // 顶部 Tab
     onTopTabTap: function (e) {
-      var key = e.currentTarget.dataset.key;
+      const key = e.currentTarget.dataset.key;
       if (key === this.data.activeTopTab) return;
       this.setData({ activeTopTab: key });
       this.loadInitial();
     },
   
-    // 底部导航切换
+    // 底部导航
     onBottomTabTap: function (e) {
-      var key = e.currentTarget.dataset.key;
+      const key = e.currentTarget.dataset.key;
       this.setData({ activeBottom: key });
       if (key === 'square') {
         this.loadInitial();
@@ -122,47 +155,36 @@ Page({
     },
   
     onSearchTap: function () { wx.navigateTo({ url: '/pages/search/index' }); },
-    onMenuTap: function () { /* 自定义 */ },
+    onMenuTap: function () {},
   
-    // 图片兜底
+    // 图片兜底（帖子/头像/Banner）
     onBannerError: function (e) {
-      var idx = Number(e.currentTarget.dataset.index || 0);
-      var arr = this.data.bannerList.slice();
+      const idx = Number(e.currentTarget.dataset.index || 0);
+      const arr = this.data.bannerList.slice();
       if (arr[idx]) {
         arr[idx].src = this.data.fallbackImg;
         this.setData({ bannerList: arr });
       }
     },
     onPostImageError: function (e) {
-      var idx = Number(e.currentTarget.dataset.index || 0);
-      var key = 'posts[' + idx + '].imageUrl';
+      const idx = Number(e.currentTarget.dataset.index || 0);
+      const key = `posts[${idx}].imageUrl`;
       this.setData({ [key]: this.data.fallbackImg });
     },
     onAvatarError: function (e) {
-      var idx = Number(e.currentTarget.dataset.index || 0);
-      var key = 'posts[' + idx + '].authorAvatar';
+      const idx = Number(e.currentTarget.dataset.index || 0);
+      const key = `posts[${idx}].authorAvatar`;
       this.setData({ [key]: this.data.fallbackImg });
     },
-    handleBannerError(e) {
-        const idx = Number(e.currentTarget.dataset.index || 0);
-        const list = this.data.bannerList.slice();
-        if (list[idx]) {
-          list[idx].src = this.data.fallbackImg;
-          this.setData({ bannerList: list });
-        }
-      },
-    
-      handlePostImageError(e) {
-        const idx = Number(e.currentTarget.dataset.index || 0);
-        // posts[idx].imageUrl -> fallback
-        const key = `posts[${idx}].imageUrl`;
-        this.setData({ [key]: this.data.fallbackImg });
-      },
-    
-      handleAvatarError(e) {
-        const idx = Number(e.currentTarget.dataset.index || 0);
-        const key = `posts[${idx}].authorAvatar`;
-        this.setData({ [key]: this.data.fallbackImg });
-      },
-    });
+  
+    // 底栏图标兜底（可选）
+    onBottomIconError: function (e) {
+      const key = e.currentTarget.dataset.key;
+      const idx = this.data.bottomTabs.findIndex(i => i.key === key);
+      if (idx >= 0) {
+        const k = `bottomTabs[${idx}].icon`;
+        this.setData({ [k]: '/assets/icons/fallback.png' });
+      }
+    }
+  });
   
