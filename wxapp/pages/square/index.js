@@ -1,9 +1,7 @@
-// miniprogram/pages/square/index.js
+// 纯小程序原生写法；无 import/require，无 Babel helper
 Page({
     data: {
       statusBarHeight: 0,
-      fabSize: 112,          // 对应 56px * 2
-      fabBottom: 60,         // 对应 FAB_BOTTOM(30px)*2
   
       topTabs: ['关注', '推荐'],
       activeTopTab: '推荐',
@@ -12,145 +10,159 @@ Page({
         { key: 'heart',  icon: '❤️', label: '心动' },
         { key: 'chat',   icon: '💬', label: '聊天' },
         { key: 'square', icon: '🔲', label: '广场' },
-        { key: 'me',     icon: '👤', label: '我的' },
+        { key: 'me',     icon: '👤', label: '我的' }
       ],
       activeBottom: 'square',
   
-      // 先用随机图占位
       bannerList: [],
-  
-      // 帖子列表占位
       posts: [],
       page: 1,
       pageSize: 10,
       refreshing: false,
   
-      sheetVisible: false,
+      // 本地兜底图（请在项目放一张 /assets/placeholder.png）
+      fallbackImg: '/assets/placeholder.png'
+      
     },
   
-    onLoad() {
-      const sys = wx.getSystemInfoSync();
-      this.setData({ statusBarHeight: sys.statusBarHeight });
+    onLoad: function () {
+      var sys = wx.getSystemInfoSync();
+      // 触发一次 setData，避免首屏 emoji 渲染延迟
+      this.setData({
+        statusBarHeight: sys.statusBarHeight,
+        bottomTabs: this.data.bottomTabs
+      });
   
-      // 初始化随机 banner
       this.initBanner();
-      // 初次加载假数据
       this.loadInitial();
     },
   
-    // 用 Picsum 随机图占位 Banner
-    initBanner() {
-      const bannerList = Array.from({ length: 3 }).map((_, idx) => ({
-        src: `https://picsum.photos/750/280?random=${Date.now() + idx}`
-      }));
-      this.setData({ bannerList });
-    },
-  
-    loadInitial() {
-      this.setData({
-        page: 1,
-        refreshing: true,
-        posts: []
-      }, () => this.fetchPosts(true));
-    },
-  
-    fetchPosts(isRefresh = false) {
-      const { page, pageSize, posts } = this.data;
-      // ↓ 如需接真实接口，可把下面这一段注释去掉
-      /*
-      wx.request({
-        url: 'https://api.example.com/posts',
-        data: { page, pageSize, tab: this.data.activeTopTab },
-        success: ({ data }) => {
-          const list = data.list || [];
-          this.setData({
-            posts: isRefresh ? list : posts.concat(list),
-            refreshing: false
-          });
-          if (isRefresh) wx.stopPullDownRefresh();
-        },
-        fail: () => {
-          this.setData({ refreshing: false });
-          wx.stopPullDownRefresh();
-        }
-      });
-      return;
-      */
-  
-      // —— 以下为假数据生成逻辑 —— 
-      const start = (page - 1) * pageSize;
-      const list = Array.from({ length: pageSize }).map((_, i) => {
-        const id = start + i + 1;
-        return {
-          uuid: `post-${id}`,
-          title: `帖子标题 ${id}`,
-          authorName: `用户${id}`,
-          authorAvatar: `https://i.pravatar.cc/40?img=${(id % 70) + 1}`,
-          likes: Math.floor(Math.random() * 100),
-          imageUrl: `https://picsum.photos/300/390?random=${Date.now() + id}`
-        };
-      });
-  
-      // 模拟网络延迟
-      setTimeout(() => {
-        this.setData({
-          posts: isRefresh ? list : posts.concat(list),
-          refreshing: false
+    // 使用 via.placeholder.com（稳定）做占位图
+    initBanner: function () {
+      var now = Date.now();
+      var arr = [];
+      for (var i = 0; i < 3; i++) {
+        arr.push({
+          src: 'https://via.placeholder.com/750x280.png?text=Banner+' + (i + 1) + '&t=' + (now + i)
         });
-        if (isRefresh) wx.stopPullDownRefresh();
-      }, 300);
+      }
+      this.setData({ bannerList: arr });
+    },
+  
+    loadInitial: function () {
+      this.setData({ page: 1, refreshing: true, posts: [] });
+      this.fetchPosts(true);
+    },
+  
+    fetchPosts: function (isRefresh) {
+      var page = this.data.page;
+      var pageSize = this.data.pageSize;
+      var start = (page - 1) * pageSize;
+      var list = [];
+      for (var i = 0; i < pageSize; i++) {
+        var id = start + i + 1;
+        var avatarIdx = ((id - 1) % 70) + 1; // 1..70
+        list.push({
+          uuid: 'post-' + id,
+          title: '帖子标题 ' + id,
+          authorName: '用户' + id,
+          authorAvatar: 'https://i.pravatar.cc/40?img=' + avatarIdx,
+          likes: Math.floor(Math.random() * 100),
+          imageUrl: 'https://via.placeholder.com/300x390.png?text=Post+' + id
+        });
+      }
+  
+      var that = this;
+      setTimeout(function () {
+        if (isRefresh) {
+          that.setData({ posts: list, refreshing: false });
+          wx.stopPullDownRefresh();
+        } else {
+          that.setData({ posts: that.data.posts.concat(list), refreshing: false });
+        }
+      }, 200);
     },
   
     // 下拉刷新
-    onPullDownRefresh() {
+    onPullDownRefresh: function () {
+      if (this.data.refreshing) return;
       this.setData({ refreshing: true });
+      this.initBanner();
       this.loadInitial();
     },
   
     // 上拉加载
-    onReachBottom() {
-      this.setData({ page: this.data.page + 1 }, () => this.fetchPosts());
+    onReachBottom: function () {
+      if (this.data.refreshing) return;
+      this.setData({ page: this.data.page + 1 });
+      this.fetchPosts(false);
     },
   
     // 顶部 Tab 切换
-    onTopTabTap(e) {
-      const key = e.currentTarget.dataset.key;
-      this.setData({ activeTopTab: key }, () => this.loadInitial());
+    onTopTabTap: function (e) {
+      var key = e.currentTarget.dataset.key;
+      if (key === this.data.activeTopTab) return;
+      this.setData({ activeTopTab: key });
+      this.loadInitial();
     },
   
     // 底部导航切换
-    onBottomTabTap(e) {
-      const key = e.currentTarget.dataset.key;
+    onBottomTabTap: function (e) {
+      var key = e.currentTarget.dataset.key;
       this.setData({ activeBottom: key });
       if (key === 'square') {
         this.loadInitial();
-      } else if (key === 'me') {
-        wx.navigateTo({ url: '/pages/profile/index' });
       } else if (key === 'heart') {
         wx.navigateTo({ url: '/pages/heart/index' });
-      } else {
+      } else if (key === 'chat') {
         wx.navigateTo({ url: '/pages/chat/index' });
+      } else if (key === 'me') {
+        wx.navigateTo({ url: '/pages/profile/index' });
       }
     },
   
-    onSearchTap() {
-      wx.navigateTo({ url: '/pages/search/index' });
-    },
+    onSearchTap: function () { wx.navigateTo({ url: '/pages/search/index' }); },
+    onMenuTap: function () { /* 自定义 */ },
   
-    onMenuTap() {
-      // 打开侧边菜单或自定义操作
+    // 图片兜底
+    onBannerError: function (e) {
+      var idx = Number(e.currentTarget.dataset.index || 0);
+      var arr = this.data.bannerList.slice();
+      if (arr[idx]) {
+        arr[idx].src = this.data.fallbackImg;
+        this.setData({ bannerList: arr });
+      }
     },
-  
-    onFabTap() {
-      this.setData({ sheetVisible: true });
+    onPostImageError: function (e) {
+      var idx = Number(e.currentTarget.dataset.index || 0);
+      var key = 'posts[' + idx + '].imageUrl';
+      this.setData({ [key]: this.data.fallbackImg });
     },
-  
-    onActionSheetClose() {
-      this.setData({ sheetVisible: false });
+    onAvatarError: function (e) {
+      var idx = Number(e.currentTarget.dataset.index || 0);
+      var key = 'posts[' + idx + '].authorAvatar';
+      this.setData({ [key]: this.data.fallbackImg });
     },
-    onSelectGallery()    { /* ... */ },
-    onTakePhoto()        { /* ... */ },
-    onTextPost()         { /* ... */ },
-    onTemplatePost()     { /* ... */ },
-  });
+    handleBannerError(e) {
+        const idx = Number(e.currentTarget.dataset.index || 0);
+        const list = this.data.bannerList.slice();
+        if (list[idx]) {
+          list[idx].src = this.data.fallbackImg;
+          this.setData({ bannerList: list });
+        }
+      },
+    
+      handlePostImageError(e) {
+        const idx = Number(e.currentTarget.dataset.index || 0);
+        // posts[idx].imageUrl -> fallback
+        const key = `posts[${idx}].imageUrl`;
+        this.setData({ [key]: this.data.fallbackImg });
+      },
+    
+      handleAvatarError(e) {
+        const idx = Number(e.currentTarget.dataset.index || 0);
+        const key = `posts[${idx}].authorAvatar`;
+        this.setData({ [key]: this.data.fallbackImg });
+      },
+    });
   

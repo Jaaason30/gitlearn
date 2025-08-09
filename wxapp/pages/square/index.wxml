@@ -1,38 +1,25 @@
-
 <view class="container">
 
 <!-- 顶部自定义导航栏 -->
-<view
-  class="top-bar"
-  style="padding-top:{{statusBarHeight}}px; height:{{statusBarHeight + 44}}px;"
->
-  <!-- 菜单 -->
+<view class="top-bar" style="padding-top:{{statusBarHeight}}px;height:{{statusBarHeight + 44}}px;">
   <view class="icon-btn" bindtap="onMenuTap">
     <text class="icon-emoji">☰</text>
   </view>
 
-  <!-- 选项卡 -->
   <view class="top-tabs">
-    <block wx:for="{{topTabs}}" wx:key="key" wx:for-item="tab">
-      <view
-        class="tab-touch"
-        bindtap="onTopTabTap"
-        data-key="{{tab}}"
-      >
-        <text
-          class="tab-text {{activeTopTab === tab ? 'tab-active' : ''}}"
-        >{{tab}}</text>
+    <block wx:for="{{topTabs}}" wx:key="*this">
+      <view class="tab-touch" bindtap="onTopTabTap" data-key="{{item}}">
+        <text class="tab-text {{activeTopTab === item ? 'tab-active' : ''}}">{{item}}</text>
       </view>
     </block>
   </view>
 
-  <!-- 搜索 -->
   <view class="icon-btn" bindtap="onSearchTap">
     <text class="icon-emoji">🔍</text>
   </view>
 </view>
 
-<!-- 主内容区：下拉刷新 + 上拉加载 -->
+<!-- 主内容：下拉刷新 + 上拉加载 -->
 <scroll-view
   class="content"
   scroll-y="true"
@@ -41,9 +28,8 @@
   bindrefresherrefresh="onPullDownRefresh"
   bindscrolltolower="onReachBottom"
   lower-threshold="100"
-  style="padding-bottom:{{fabBottom + fabSize + 10}}px;"
+  style="padding-bottom:112rpx;"
 >
-
   <!-- Banner 轮播 -->
   <swiper
     class="banner"
@@ -54,22 +40,40 @@
     interval="3000"
     duration="500"
   >
-    <block wx:for="{{bannerList}}" wx:key="index" wx:for-item="item">
+    <block wx:for="{{bannerList}}" wx:key="index">
       <swiper-item>
-        <image src="{{item.src}}" class="banner-image" mode="aspectFill" />
+        <image
+          src="{{item.src}}"
+          class="banner-image"
+          mode="aspectFill"
+          binderror="onBannerError"
+          data-index="{{index}}"
+        />
       </swiper-item>
     </block>
   </swiper>
 
-  <!-- 帖子两列瀑布流 -->
+  <!-- 帖子两列 -->
   <view class="list-content">
-    <block wx:for="{{posts}}" wx:key="uuid" wx:for-index="idx" wx:for-item="item">
+    <block wx:for="{{posts}}" wx:key="uuid" wx:for-index="idx">
       <view class="card {{(idx + 1) % 2 === 0 ? 'card-even' : ''}}">
-        <image src="{{item.imageUrl}}" class="card-image" mode="aspectFill" />
+        <image
+          src="{{item.imageUrl}}"
+          class="card-image"
+          mode="aspectFill"
+          binderror="onPostImageError"
+          data-index="{{idx}}"
+        />
         <text class="card-title">{{item.title}}</text>
         <view class="card-footer">
           <view class="author-container">
-            <image src="{{item.authorAvatar}}" class="author-avatar" />
+            <image
+              src="{{item.authorAvatar}}"
+              class="author-avatar"
+              mode="aspectFill"
+              binderror="onAvatarError"
+              data-index="{{idx}}"
+            />
             <text class="author">{{item.authorName}}</text>
           </view>
           <view class="likes-row">
@@ -82,36 +86,16 @@
   </view>
 </scroll-view>
 
-<!-- 底部导航栏 -->
+<!-- 底部导航（四个按钮 + 顶部小圆点高亮） -->
 <view class="bottom-bar">
-  <block wx:for="{{bottomTabs}}" wx:key="key" wx:for-item="tab">
-    <view
-      class="bottom-item {{activeBottom === tab.key ? 'bottom-item-active' : ''}}"
-      bindtap="onBottomTabTap"
-      data-key="{{tab.key}}"
-    >
-      <text class="bottom-icon" style="color:{{activeBottom === tab.key ? '#d81e06' : '#888'}}">{{tab.icon}}</text>
-      <text class="bottom-label {{activeBottom === tab.key ? 'bottom-label-active' : ''}}">{{tab.label}}</text>
+  <block wx:for="{{bottomTabs}}" wx:key="key">
+    <view class="bottom-item-container" bindtap="onBottomTabTap" data-key="{{item.key}}">
+      <view wx:if="{{activeBottom === item.key}}" class="bottom-dot"></view>
+      <view class="bottom-item {{activeBottom === item.key ? 'bottom-item-active' : ''}}">
+        <text class="bottom-icon" style="color:{{activeBottom === item.key ? '#d81e06' : '#888'}}">{{item.icon}}</text>
+        <text class="bottom-label {{activeBottom === item.key ? 'bottom-label-active' : ''}}">{{item.label}}</text>
+      </view>
     </view>
   </block>
 </view>
-
-<!-- 中央 FAB 按钮 -->
-<view
-  class="fab"
-  style="bottom:{{fabBottom}}px; width:{{fabSize}}px; height:{{fabSize}}px;"
-  bindtap="onFabTap"
->
-  <text class="plus">+</text>
-</view>
-
-<!-- 发帖弹层：这里假设你已经封装了 custom-action-sheet 组件 -->
-<custom-action-sheet
-  visible="{{sheetVisible}}"
-  bind:close="onActionSheetClose"
-  bind:selectGallery="onSelectGallery"
-  bind:takePhoto="onTakePhoto"
-  bind:textPost="onTextPost"
-  bind:templatePost="onTemplatePost"
-/>
 </view>
